@@ -32,3 +32,15 @@ async def fetch_with_retry(
 ) -> Optional[httpx.Response]:
     for attempt in range(retries + 1):
         try:
+            await asyncio.sleep(random.uniform(0.05, jitter_max))
+            resp = await client.get(url, headers=headers or {}, follow_redirects=False)
+            return resp
+        except (httpx.TimeoutException, httpx.TransportError):
+            if attempt == retries:
+                return None
+            await asyncio.sleep(0.3 * (attempt + 1))
+    return None
+
+
+async def audit_endpoint(
+    client: httpx.AsyncClient,
