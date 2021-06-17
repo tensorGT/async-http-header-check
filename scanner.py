@@ -44,3 +44,14 @@ async def fetch_with_retry(
 
 async def audit_endpoint(
     client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    url: str,
+    allowed_hosts: List[str],
+) -> Dict:
+    if not is_in_scope(url, allowed_hosts):
+        return {"url": url, "skipped": True, "reason": "host not in allowed scope"}
+
+    async with sem:
+        resp = await fetch_with_retry(client, url)
+        if resp is None:
+            return {"url": url, "error": "request failed after retries"}
