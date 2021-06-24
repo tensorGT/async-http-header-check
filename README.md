@@ -4,3 +4,4 @@ trying `asyncio` and `httpx` in python for check security headers and misconfigu
 by default it only allow `localhost` and `127.0.0.1` so it dont scan random websites by accident.
 
 ## features
+- concurrency limit with `asyncio.Semaphore` + random jitter delay

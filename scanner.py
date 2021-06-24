@@ -55,3 +55,15 @@ async def audit_endpoint(
         resp = await fetch_with_retry(client, url)
         if resp is None:
             return {"url": url, "error": "request failed after retries"}
+
+        findings: List[Dict[str, str]] = []
+        resp_headers = {k.lower(): v for k, v in resp.headers.items()}
+
+        # 1. check missing security headers
+        for h in SECURITY_HEADERS:
+            if h not in resp_headers:
+                findings.append({"type": "missing_header", "detail": "missing %s" % h})
+
+        # 2. check CORS with untrusted origin
+        cors_resp = await fetch_with_retry(
+            client, url, headers={"Origin": "https://untrusted.example.invalid"}
