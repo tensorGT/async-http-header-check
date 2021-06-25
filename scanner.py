@@ -67,3 +67,14 @@ async def audit_endpoint(
         # 2. check CORS with untrusted origin
         cors_resp = await fetch_with_retry(
             client, url, headers={"Origin": "https://untrusted.example.invalid"}
+        )
+        if cors_resp is not None:
+            acao = cors_resp.headers.get("access-control-allow-origin", "")
+            acac = cors_resp.headers.get("access-control-allow-credentials", "").lower()
+            if acao == "*" and acac == "true":
+                findings.append({"type": "cors", "detail": "wildcard origin with credentials=true"})
+            elif "untrusted.example.invalid" in acao:
+                findings.append({"type": "cors", "detail": "reflects arbitrary Origin header"})
+
+        # 3. passive open-redirect check on common param
+        sep = "&" if "?" in url else "?"
