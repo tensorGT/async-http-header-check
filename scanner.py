@@ -78,3 +78,15 @@ async def audit_endpoint(
 
         # 3. passive open-redirect check on common param
         sep = "&" if "?" in url else "?"
+        redir_resp = await fetch_with_retry(
+            client, url + sep + "next=https://example.invalid/test"
+        )
+        if redir_resp is not None and redir_resp.status_code in (301, 302, 303, 307, 308):
+            loc = redir_resp.headers.get("location", "")
+            if loc.startswith("https://example.invalid"):
+                findings.append({"type": "open_redirect", "detail": "Location reflects ?next= target"})
+
+        # 4. basic auth / cookie flag checks
+        if "www-authenticate" in resp_headers and url.startswith("http://"):
+            findings.append({"type": "auth", "detail": "Basic/Auth challenge over plain HTTP"})
+
