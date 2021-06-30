@@ -90,3 +90,14 @@ async def audit_endpoint(
         if "www-authenticate" in resp_headers and url.startswith("http://"):
             findings.append({"type": "auth", "detail": "Basic/Auth challenge over plain HTTP"})
 
+        set_cookie = resp.headers.get("set-cookie", "")
+        if set_cookie:
+            low_cookie = set_cookie.lower()
+            if "httponly" not in low_cookie or "samesite" not in low_cookie:
+                findings.append({"type": "cookie", "detail": "Set-Cookie missing HttpOnly or SameSite"})
+
+        return {
+            "url": url,
+            "status_code": resp.status_code,
+            "findings": findings,
+        }
