@@ -101,3 +101,15 @@ async def audit_endpoint(
             "status_code": resp.status_code,
             "findings": findings,
         }
+
+
+def write_markdown(results: List[Dict], out_path: Path) -> None:
+    lines = ["# Header & Config Audit Report\n"]
+    for item in results:
+        lines.append("## %s\n" % item["url"])
+        if item.get("skipped"):
+            lines.append("- Skipped: %s\n" % item.get("reason"))
+        elif item.get("error"):
+            lines.append("- Error: %s\n" % item.get("error"))
+        else:
+            lines.append("- Status: `%s`\n" % item.get("status_code"))
