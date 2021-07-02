@@ -113,3 +113,14 @@ def write_markdown(results: List[Dict], out_path: Path) -> None:
             lines.append("- Error: %s\n" % item.get("error"))
         else:
             lines.append("- Status: `%s`\n" % item.get("status_code"))
+            if not item["findings"]:
+                lines.append("- No issues found\n")
+            for f in item["findings"]:
+                lines.append("- **%s**: %s\n" % (f["type"], f["detail"]))
+        lines.append("\n")
+    out_path.write_text("".join(lines), encoding="utf-8")
+
+
+async def run_scan(urls: List[str], allowed_hosts: List[str], concurrency: int, timeout: float) -> List[Dict]:
+    sem = asyncio.Semaphore(concurrency)
+    async with httpx.AsyncClient(timeout=timeout) as client:

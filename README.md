@@ -11,3 +11,4 @@ by default it only allow `localhost` and `127.0.0.1` so it dont scan random webs
 - saves report in JSON and Markdown
 
 ## usage
+```bash
