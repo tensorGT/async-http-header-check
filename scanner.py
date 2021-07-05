@@ -124,3 +124,15 @@ def write_markdown(results: List[Dict], out_path: Path) -> None:
 async def run_scan(urls: List[str], allowed_hosts: List[str], concurrency: int, timeout: float) -> List[Dict]:
     sem = asyncio.Semaphore(concurrency)
     async with httpx.AsyncClient(timeout=timeout) as client:
+        tasks = [audit_endpoint(client, sem, u, allowed_hosts) for u in urls]
+        return await asyncio.gather(*tasks)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="async http security header and config scanner")
+    parser.add_argument("urls", nargs="+", help="target urls to check")
+    parser.add_argument("--allow-host", action="append", default=["127.0.0.1", "localhost"], help="allowed hostnames")
+    parser.add_argument("--concurrency", type=int, default=3)
+    parser.add_argument("--timeout", type=float, default=5.0)
+    parser.add_argument("--json-out", default="scan_report.json")
+    parser.add_argument("--md-out", default="scan_report.md")
