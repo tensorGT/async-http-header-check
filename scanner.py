@@ -136,3 +136,15 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--json-out", default="scan_report.json")
     parser.add_argument("--md-out", default="scan_report.md")
+    args = parser.parse_args()
+
+    results = asyncio.run(run_scan(args.urls, args.allow_host, args.concurrency, args.timeout))
+
+    with open(args.json_out, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+    write_markdown(results, Path(args.md_out))
+    print("done! saved %s and %s" % (args.json_out, args.md_out))
+
+
+if __name__ == "__main__":
+    main()

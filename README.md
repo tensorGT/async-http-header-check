@@ -13,3 +13,5 @@ by default it only allow `localhost` and `127.0.0.1` so it dont scan random webs
 ## usage
 ```bash
 pip install -r requirements.txt
+python scanner.py http://127.0.0.1:8000/ --concurrency 2
+```
